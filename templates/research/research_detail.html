@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} | Investigación{% endblock %}
+{% block content %}
+<article>
+    <h1>{{ item.title }}</h1>
+    <p>{{ item.get_topic_display }}{% if item.year %} · {{ item.year }}{% endif %}</p>
+    {% if item.authors %}<p>{{ item.authors }}</p>{% endif %}
+    {% if item.publication %}<p>{{ item.publication }}</p>{% endif %}
+    <div>{{ item.abstract|linebreaks }}</div>
+    {% if item.publication_url %}<p><a href="{{ item.publication_url }}">Ver publicación</a></p>{% endif %}
+</article>
+{% endblock %}

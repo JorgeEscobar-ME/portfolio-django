@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Proyectos | Portafolio{% endblock %}
+{% block content %}
+<h1>Proyectos</h1>
+{% for project in projects %}
+    <article>
+        <h2><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></h2>
+        <p>{{ project.summary }}</p>
+        {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
+    </article>
+{% empty %}
+    <p>Aún no hay proyectos.</p>
+{% endfor %}
+{% endblock %}

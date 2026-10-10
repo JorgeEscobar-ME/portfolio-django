@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} | Proyectos{% endblock %}
+{% block content %}
+<article>
+    <h1>{{ project.title }}</h1>
+    <p>{{ project.summary }}</p>
+    {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
+    <div>{{ project.description|linebreaks }}</div>
+    {% if project.repository_url %}<p><a href="{{ project.repository_url }}">Código fuente</a></p>{% endif %}
+    {% if project.demo_url %}<p><a href="{{ project.demo_url }}">Ver implementación</a></p>{% endif %}
+</article>
+{% endblock %}

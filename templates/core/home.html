@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{% if profile %}{{ profile.name }} | Portafolio{% else %}Portafolio | Matemáticas, educación e ingeniería{% endif %}{% endblock %}
+
+{% block content %}
+{% if profile %}
+    <section aria-labelledby="profile-name">
+        <h1 id="profile-name">{{ profile.name }}</h1>
+        {% if profile.headline %}<p>{{ profile.headline }}</p>{% endif %}
+        {% if profile.biography %}<div>{{ profile.biography|linebreaks }}</div>{% endif %}
+        <nav aria-label="Contacto y perfiles">
+            {% if profile.public_email %}<a href="mailto:{{ profile.public_email }}">Correo</a>{% endif %}
+            {% if profile.github_url %}<a href="{{ profile.github_url }}" target="_blank" rel="noopener noreferrer">GitHub</a>{% endif %}
+            {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
+            {% if profile.orcid_url %}<a href="{{ profile.orcid_url }}" target="_blank" rel="noopener noreferrer">ORCID</a>{% endif %}
+            {% if profile.google_scholar_url %}<a href="{{ profile.google_scholar_url }}" target="_blank" rel="noopener noreferrer">Google Scholar</a>{% endif %}
+            {% if profile.cv_url %}<a href="{{ profile.cv_url }}" target="_blank" rel="noopener noreferrer">CV</a>{% endif %}
+        </nav>
+    </section>
+{% else %}
+    <h1>Matemáticas, educación e ingeniería</h1>
+    <p>Un espacio para compartir investigación, escritura y proyectos.</p>
+{% endif %}
+
+<section>
+    <h2>Blog</h2>
+    <ul>
+        {% for post in recent_posts %}
+            <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+        {% empty %}
+            <li>Aún no hay publicaciones.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'blog:list' %}">Ver el blog</a>
+</section>
+
+<section>
+    <h2>Investigación</h2>
+    <ul>
+        {% for item in recent_research %}
+            <li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+        {% empty %}
+            <li>Aún no hay trabajos publicados.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'research:list' %}">Ver investigación</a>
+</section>
+
+<section>
+    <h2>Proyectos</h2>
+    <ul>
+        {% for project in featured_projects %}
+            <li><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></li>
+        {% empty %}
+            <li>Aún no hay proyectos destacados.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'projects:list' %}">Ver proyectos</a>
+</section>
+{% endblock %}
