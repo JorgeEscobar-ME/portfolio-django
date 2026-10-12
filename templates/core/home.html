@@ -52,6 +52,7 @@
         color: var(--muted);
         font-size: 1.14rem;
         line-height: 1.7;
+        overflow-wrap: anywhere;
     }
 
     .cta-row {
@@ -298,8 +299,13 @@
 
     @media (max-width: 900px) {
         .hero {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             padding-top: 36px;
+        }
+
+        .hero-copy,
+        .hero-side {
+            min-width: 0;
         }
 
         .cards-grid {
