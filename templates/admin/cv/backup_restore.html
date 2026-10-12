@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div id="content-main">
+        <p>
+            La copia incluye los registros de la base de datos y los archivos de
+            medios locales, como las fotos del perfil. Contiene también usuarios
+            administradores y sus hashes de contraseña: guarda el archivo en un
+            lugar privado.
+        </p>
+        <p>
+            Restaurar reemplaza todos los datos actuales de la base de datos.
+            Confirma que tienes una copia reciente antes de continuar.
+        </p>
+
+        {% if errors %}
+            <div class="errornote">
+                {% for error in errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <label for="id_backup_file">Archivo de copia (.zip)</label>
+                <input id="id_backup_file" name="backup_file" type="file" accept=".zip">
+            </div>
+            <div class="form-row">
+                <label for="id_confirm_restore">
+                    Escribe RESTORE para reemplazar los datos actuales
+                </label>
+                <input
+                    id="id_confirm_restore"
+                    name="confirm_restore"
+                    type="text"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+            <div class="submit-row">
+                <input type="submit" value="Restaurar copia" class="default">
+                <a href="{% url 'admin:index' %}" class="closelink">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -146,6 +146,8 @@ The `cv` application provides a singleton `CVProfile` for the editable professio
 
 Long-text CV fields use the EasyMDE Markdown editor in Django admin. Lists, emphasis, and links are sanitized and rendered on the public CV and in the generated PDF.
 
+The singleton CV profile admin provides superuser-only ZIP backup and restore actions. Archives contain Django fixture data and local media files; restore validates the archive, confirms a superuser record is present, then replaces database rows in a transaction before restoring media. Archive size is limited to 100 MiB.
+
 ### 7.3 Blog post
 
 `blog.Post` stores:

@@ -67,6 +67,8 @@ El perfil es único: se edita el registro existente y no se puede crear un segun
 
 En el módulo **CV** puedes editar el perfil profesional, experiencias, formación académica y productos de investigación. Los campos de texto largo incluyen un editor Markdown con vista previa; usa los botones de lista con viñetas o numerada para organizar responsabilidades y logros. El formato se conserva en la página pública del CV y en su descarga PDF.
 
+En **Perfil del currículum** puedes descargar una copia ZIP con los registros de la base de datos y los archivos de medios locales, o restaurarla en una base compatible con la versión desplegada. La restauración reemplaza todos los registros actuales y exige escribir `RESTORE`; el ZIP debe contener al menos un superusuario. Las copias incluyen hashes de contraseña, por lo que debes guardarlas en un lugar privado. El archivo está limitado a 100 MiB.
+
 ### Administrar el blog
 
 En **Posts**, selecciona **Add post**. Los campos son:

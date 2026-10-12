@@ -1,6 +1,18 @@
 from django import forms
 from django.contrib import admin
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import path, reverse
+from django.utils import timezone
 
+from .backup import (
+    BackupValidationError,
+    create_backup,
+    inspect_backup,
+    restore_backup,
+)
 from .models import (
     CVProfile,
     Certification,
@@ -68,6 +80,7 @@ class CVMarkdownEditorAdminMixin:
 class CVProfileAdmin(CVMarkdownEditorAdminMixin, admin.ModelAdmin):
     form = CVProfileForm
     fields = ("summary",)
+    change_form_template = "admin/cv/cvprofile/change_form.html"
 
     def has_add_permission(self, request):
         return super().has_add_permission(request) and not CVProfile.objects.exists()
@@ -78,6 +91,68 @@ class CVProfileAdmin(CVMarkdownEditorAdminMixin, admin.ModelAdmin):
             and obj is not None
             and obj.pk != 1
         )
+
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "backup/",
+                self.admin_site.admin_view(self.backup_view),
+                name="cv_cvprofile_backup_database",
+            ),
+            path(
+                "restore/",
+                self.admin_site.admin_view(self.restore_view),
+                name="cv_cvprofile_restore_database",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def backup_view(self, request):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        try:
+            backup = create_backup()
+        except BackupValidationError as error:
+            messages.error(request, str(error))
+            return HttpResponseRedirect(reverse("admin:index"))
+        timestamp = timezone.now().strftime("%Y%m%d-%H%M%S")
+        return FileResponse(
+            backup,
+            as_attachment=True,
+            filename=f"portfolio-backup-{timestamp}.zip",
+            content_type="application/zip",
+        )
+
+    def restore_view(self, request):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Restaurar copia de seguridad",
+            "errors": [],
+        }
+        if request.method == "POST":
+            uploaded_file = request.FILES.get("backup_file")
+            if request.POST.get("confirm_restore") != "RESTORE":
+                context["errors"].append(
+                    'Escribe RESTORE para confirmar que los datos actuales serán reemplazados.'
+                )
+            elif uploaded_file is None:
+                context["errors"].append("Selecciona un archivo de copia de seguridad.")
+            else:
+                try:
+                    fixture, media_files = inspect_backup(uploaded_file)
+                    restore_backup(fixture, media_files)
+                except BackupValidationError as error:
+                    context["errors"].append(str(error))
+                else:
+                    messages.success(
+                        request,
+                        "La copia se restauró. Vuelve a iniciar sesión si se te solicita.",
+                    )
+                    return HttpResponseRedirect(reverse("admin:index"))
+        return render(request, "admin/cv/backup_restore.html", context)
 
 
 @admin.register(Experience)

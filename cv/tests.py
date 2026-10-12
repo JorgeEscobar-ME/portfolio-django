@@ -1,7 +1,12 @@
 from datetime import date
+from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from zipfile import ZipFile
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from reportlab.platypus import ListFlowable
 
@@ -138,6 +143,73 @@ class CVPageTests(TestCase):
         self.assertContains(response, "markdown-editor")
         self.assertContains(response, "easymde.min.js")
 
+    def test_admin_can_download_and_restore_database_and_media_backup(self):
+        admin_user = get_user_model().objects.create_superuser(
+            username="backup-admin",
+            email="backup-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(admin_user)
+
+        with TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                media_path = Path(media_root) / "profile" / "portrait.png"
+                media_path.parent.mkdir(parents=True)
+                media_path.write_bytes(b"backup-image")
+
+                backup_response = self.client.get(
+                    reverse("admin:cv_cvprofile_backup_database")
+                )
+                self.assertEqual(backup_response.status_code, 200)
+                self.assertEqual(
+                    backup_response["Content-Type"],
+                    "application/zip",
+                )
+                backup_bytes = b"".join(backup_response.streaming_content)
+                with ZipFile(BytesIO(backup_bytes)) as backup:
+                    self.assertIn("data.json", backup.namelist())
+                    self.assertIn("media/profile/portrait.png", backup.namelist())
+
+                original_summary = self.cv_profile.summary
+                self.cv_profile.summary = "Contenido que debe reemplazarse."
+                self.cv_profile.save()
+                media_path.write_bytes(b"current-image")
+                uploaded_backup = SimpleUploadedFile(
+                    "portfolio-backup.zip",
+                    backup_bytes,
+                    content_type="application/zip",
+                )
+
+                response = self.client.post(
+                    reverse("admin:cv_cvprofile_restore_database"),
+                    {
+                        "backup_file": uploaded_backup,
+                        "confirm_restore": "RESTORE",
+                    },
+                )
+
+                self.assertEqual(response.status_code, 302)
+                self.cv_profile.refresh_from_db()
+                self.assertEqual(self.cv_profile.summary, original_summary)
+                self.assertEqual(media_path.read_bytes(), b"backup-image")
+
+    def test_restore_requires_explicit_confirmation_before_changing_data(self):
+        admin_user = get_user_model().objects.create_superuser(
+            username="restore-admin",
+            email="restore-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(admin_user)
+
+        response = self.client.post(
+            reverse("admin:cv_cvprofile_restore_database"),
+            {"confirm_restore": "yes"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.cv_profile.refresh_from_db()
+        self.assertEqual(self.cv_profile.summary, "Resumen editable para el currículum.")
+
     def test_cv_profile_summary_is_managed_in_cv_admin(self):
         admin_user = get_user_model().objects.create_superuser(
             username="cv-admin",
@@ -145,6 +217,12 @@ class CVPageTests(TestCase):
             password="test-password",
         )
         self.client.force_login(admin_user)
+
+        change_response = self.client.get(
+            reverse("admin:cv_cvprofile_change", args=[self.cv_profile.pk])
+        )
+        self.assertContains(change_response, "Descargar copia")
+        self.assertContains(change_response, "Restaurar copia")
 
         response = self.client.post(
             reverse("admin:cv_cvprofile_change", args=[self.cv_profile.pk]),
