@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from reportlab.platypus import ListFlowable
 
 from core.models import SiteProfile
 
@@ -31,7 +32,11 @@ class CVPageTests(TestCase):
             dedication=Experience.Dedication.HOUR_CHAIR,
             start_date=date(2023, 1, 1),
             current=True,
-            description="Diseño de cursos y acompañamiento estudiantil.",
+            description=(
+                "Diseño de cursos y acompañamiento estudiantil.\n\n"
+                "- Planeación académica\n"
+                "- Evaluación formativa"
+            ),
         )
         Experience.objects.create(
             role="Analista de datos",
@@ -73,6 +78,8 @@ class CVPageTests(TestCase):
         self.assertContains(response, "Experiencia docente")
         self.assertContains(response, "Docente")
         self.assertContains(response, "Hora cátedra")
+        self.assertContains(response, "<ul>")
+        self.assertContains(response, "Planeación académica")
         self.assertContains(response, "Tiempo completo")
         self.assertContains(response, "Analista de datos")
         self.assertContains(response, "Formación académica")
@@ -89,6 +96,47 @@ class CVPageTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertIn("attachment;", response["Content-Disposition"])
         self.assertTrue(response.content.startswith(b"%PDF-"))
+
+    def test_markdown_lists_are_supported_in_pdf_content(self):
+        from .formatting import markdown_to_reportlab_flowables
+        from .views import _pdf_styles
+
+        flowables = markdown_to_reportlab_flowables(
+            "- Primer logro\n- Segundo logro",
+            _pdf_styles(),
+        )
+
+        self.assertEqual(len(flowables), 1)
+        self.assertIsInstance(flowables[0], ListFlowable)
+
+    def test_cv_markdown_output_sanitizes_unsafe_html_and_links(self):
+        from .formatting import render_cv_markdown
+
+        rendered = render_cv_markdown(
+            '<script>alert("unsafe")</script>\n\n[bad](javascript:alert(1))'
+        )
+
+        self.assertNotIn("<script>", rendered)
+        self.assertNotIn('href="javascript:', rendered)
+
+    def test_admin_experience_form_loads_markdown_editor_for_description(self):
+        admin_user = get_user_model().objects.create_superuser(
+            username="cv-editor-admin",
+            email="cv-editor-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(admin_user)
+
+        response = self.client.get(
+            reverse(
+                "admin:cv_experience_change",
+                args=[Experience.objects.first().pk],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "markdown-editor")
+        self.assertContains(response, "easymde.min.js")
 
     def test_cv_profile_summary_is_managed_in_cv_admin(self):
         admin_user = get_user_model().objects.create_superuser(

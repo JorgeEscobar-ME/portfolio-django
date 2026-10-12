@@ -23,6 +23,7 @@ from reportlab.platypus import (
 from core.models import SiteProfile
 
 from .models import CVProfile, Certification, Education, Experience, ResearchProduct, Skill
+from .formatting import markdown_to_reportlab_flowables
 
 
 def cv_detail(request):
@@ -92,9 +93,9 @@ def cv_pdf(request):
             story.extend(
                 [
                     Spacer(1, 3 * mm),
-                    Paragraph(_pdf_text(summary), styles["CVBody"]),
                 ]
             )
+            story.extend(markdown_to_reportlab_flowables(summary, styles))
         story.append(Spacer(1, 4 * mm))
 
     _append_experience(
@@ -267,7 +268,7 @@ def _append_experience(story, styles, experiences, heading):
             Paragraph(_pdf_text(meta), styles["CVMeta"]),
         ]
         if item.description:
-            entry.append(Paragraph(_pdf_text(item.description), styles["CVBody"]))
+            entry.extend(markdown_to_reportlab_flowables(item.description, styles))
         story.append(KeepTogether(entry))
 
 
@@ -292,7 +293,7 @@ def _append_research_products(story, styles, products):
             Paragraph(_pdf_text(meta), styles["CVMeta"]),
         ]
         if item.description:
-            entry.append(Paragraph(_pdf_text(item.description), styles["CVBody"]))
+            entry.extend(markdown_to_reportlab_flowables(item.description, styles))
         if item.product_url:
             entry.append(Paragraph(_pdf_text(item.product_url), styles["CVMeta"]))
         story.append(KeepTogether(entry))
@@ -310,7 +311,7 @@ def _append_education(story, styles, education):
             Paragraph(_pdf_text(meta), styles["CVMeta"]),
         ]
         if item.details:
-            entry.append(Paragraph(_pdf_text(item.details), styles["CVBody"]))
+            entry.extend(markdown_to_reportlab_flowables(item.details, styles))
         story.append(KeepTogether(entry))
 
 

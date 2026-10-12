@@ -63,6 +63,10 @@ La migración inicial crea un perfil con la información proporcionada para este
 
 El perfil es único: se edita el registro existente y no se puede crear un segundo desde Admin. Los cambios se reflejan en la siguiente visita a la portada. El correo se presenta como enlace `mailto:` y los demás perfiles se abren en otra pestaña.
 
+### Administrar el currículum
+
+En el módulo **CV** puedes editar el perfil profesional, experiencias, formación académica y productos de investigación. Los campos de texto largo incluyen un editor Markdown con vista previa; usa los botones de lista con viñetas o numerada para organizar responsabilidades y logros. El formato se conserva en la página pública del CV y en su descarga PDF.
+
 ### Administrar el blog
 
 En **Posts**, selecciona **Add post**. Los campos son:

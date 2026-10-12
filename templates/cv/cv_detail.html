@@ -129,7 +129,26 @@
         margin: 10px 0 0;
         color: var(--muted);
         line-height: 1.7;
-        white-space: pre-line;
+    }
+
+    .cv-description p {
+        margin: 0.5em 0;
+    }
+
+    .cv-description p:first-child {
+        margin-top: 0;
+    }
+
+    .cv-description ul,
+    .cv-description ol {
+        margin: 0.5em 0;
+        padding-left: 1.5em;
+    }
+
+    .cv-description blockquote {
+        margin: 0.75em 0;
+        padding-left: 1em;
+        border-left: 3px solid var(--accent);
     }
 
     .skill-list {
@@ -217,6 +236,7 @@
 {% endblock %}
 
 {% block content %}
+{% load cv_formatting %}
 <div class="cv-page">
     <header class="cv-heading">
         <div class="cv-identity">
@@ -244,7 +264,7 @@
     {% if cv_profile.summary or profile.biography %}
         <section class="cv-section cv-summary" aria-labelledby="cv-summary">
             <h2 id="cv-summary">Perfil</h2>
-            <p class="cv-description">{{ cv_profile.summary|default:profile.biography|striptags }}</p>
+            <div class="cv-description">{{ cv_profile.summary|default:profile.biography|cv_markdown }}</div>
         </section>
     {% endif %}
 
@@ -259,7 +279,7 @@
                         {% if item.dedication %} · {{ item.get_dedication_display }}{% endif %}
                         {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – Actualidad{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
                     </p>
-                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                    {% if item.description %}<div class="cv-description">{{ item.description|cv_markdown }}</div>{% endif %}
                 </article>
             {% endfor %}
         </section>
@@ -276,7 +296,7 @@
                         {% if item.dedication %} · {{ item.get_dedication_display }}{% endif %}
                         {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – Actualidad{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
                     </p>
-                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                    {% if item.description %}<div class="cv-description">{{ item.description|cv_markdown }}</div>{% endif %}
                 </article>
             {% endfor %}
         </section>
@@ -292,7 +312,7 @@
                         {{ item.institution }}{% if item.location %} · {{ item.location }}{% endif %}
                         {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – En curso{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
                     </p>
-                    {% if item.details %}<p class="cv-description">{{ item.details|striptags }}</p>{% endif %}
+                    {% if item.details %}<div class="cv-description">{{ item.details|cv_markdown }}</div>{% endif %}
                 </article>
             {% endfor %}
         </section>
@@ -341,7 +361,7 @@
                     <p class="cv-meta">{{ item.get_product_type_display }}{% if item.venue %} · {{ item.venue }}{% endif %}{% if item.year %} · {{ item.year }}{% endif %}</p>
                     {% if item.authors %}<p class="cv-meta">{{ item.authors }}</p>{% endif %}
                     {% if item.identifier %}<p class="cv-meta">{{ item.identifier }}</p>{% endif %}
-                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                    {% if item.description %}<div class="cv-description">{{ item.description|cv_markdown }}</div>{% endif %}
                 </article>
             {% endfor %}
         </section>

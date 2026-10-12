@@ -144,6 +144,8 @@ sequenceDiagram
 
 The `cv` application provides a singleton `CVProfile` for the editable professional summary, plus independently editable professional and teaching `Experience`, `Education`, `Skill`, `Certification`, and `ResearchProduct` records. Experiences include an employment dedication type (full-time, part-time, hourly teaching, services contract, freelance, internship, or other). Each record has an explicit display order; dated entries are ordered newest first, with current roles or studies first. Skills are grouped into technical, language, and other categories. Research products include type, authors, venue, year, identifier, URL, and description. There are no foreign-key relationships to the site profile because the site has one owner and profile context is shared at render time.
 
+Long-text CV fields use the EasyMDE Markdown editor in Django admin. Lists, emphasis, and links are sanitized and rendered on the public CV and in the generated PDF.
+
 ### 7.3 Blog post
 
 `blog.Post` stores:
