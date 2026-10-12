@@ -47,6 +47,16 @@ La configuración local usa SQLite y `DEBUG=True`. La base local se guarda en `d
 
 El superusuario tiene acceso completo. No existe creación de cuentas desde el sitio público; las cuentas adicionales se crean desde **Authentication and Authorization > Users** y deben tener permisos de staff para entrar al Admin. Comparte credenciales solo con personas que deban administrar el sitio.
 
+#### Crear el primer administrador en Render
+
+Si tu plan no incluye Shell, configura estas variables en **Environment** para el servicio web:
+
+- `DJANGO_SUPERUSER_USERNAME`
+- `DJANGO_SUPERUSER_EMAIL`
+- `DJANGO_SUPERUSER_PASSWORD`
+
+Después, despliega o reinicia el servicio. El comando de inicio ejecuta `bootstrap_superuser` después de las migraciones; crea el usuario solo si todavía no existe. Si las tres variables están vacías, no hace nada; si falta alguna, el inicio falla explícitamente. Una vez creado, puedes borrar estas variables de Render. El comando no cambia la contraseña de un usuario existente. Asegúrate de que `DATABASE_URL` apunte a una base de datos persistente antes de habilitar este método.
+
 ### Administrar el perfil
 
 La migración inicial crea un perfil con la información proporcionada para este portafolio. En **Perfil del portafolio**, selecciona el registro para cambiar el nombre, título y biografía que aparecen en la portada. También puedes modificar el correo público, GitHub y LinkedIn. ORCID, Google Scholar y CV son campos opcionales; los enlaces vacíos no se muestran. Por ahora el ORCID no está publicado.

@@ -1,13 +1,71 @@
 from io import BytesIO
+from os import environ
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
 from .models import SiteProfile
+
+
+class BootstrapSuperuserCommandTests(TestCase):
+    credentials = {
+        "DJANGO_SUPERUSER_USERNAME": "deployment-admin",
+        "DJANGO_SUPERUSER_EMAIL": "deployment-admin@example.com",
+        "DJANGO_SUPERUSER_PASSWORD": "A-strong-password-928!",
+    }
+
+    @override_settings(DEBUG=True)
+    def test_creates_configured_superuser_only_once(self):
+        with patch.dict(environ, self.credentials):
+            call_command("bootstrap_superuser")
+            call_command("bootstrap_superuser")
+
+        user_model = get_user_model()
+        self.assertEqual(
+            user_model.objects.filter(username="deployment-admin").count(),
+            1,
+        )
+        user = user_model.objects.get(username="deployment-admin")
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
+        self.assertTrue(
+            user.check_password(self.credentials["DJANGO_SUPERUSER_PASSWORD"])
+        )
+
+    def test_skips_when_no_credentials_are_configured(self):
+        with patch.dict(environ, {}, clear=True):
+            call_command("bootstrap_superuser")
+
+        self.assertFalse(get_user_model().objects.exists())
+
+    def test_rejects_incomplete_credentials(self):
+        with patch.dict(
+            environ,
+            {"DJANGO_SUPERUSER_USERNAME": "deployment-admin"},
+            clear=True,
+        ):
+            with self.assertRaises(CommandError):
+                call_command("bootstrap_superuser")
+
+        self.assertFalse(get_user_model().objects.exists())
+
+    @override_settings(DEBUG=False)
+    def test_requires_persistent_database_in_production(self):
+        with patch.dict(environ, self.credentials):
+            with self.assertRaisesMessage(
+                CommandError,
+                "requires a persistent database",
+            ):
+                call_command("bootstrap_superuser")
+
+        self.assertFalse(get_user_model().objects.exists())
 
 
 class HomePageProfileTests(TestCase):

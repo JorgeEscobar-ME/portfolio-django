@@ -3,7 +3,7 @@ services:
     name: portfolio-django
     runtime: python
     buildCommand: bash build.sh
-    startCommand: python manage.py migrate --noinput && gunicorn config.wsgi:application
+    startCommand: python manage.py migrate --noinput && python manage.py bootstrap_superuser && unset DJANGO_SUPERUSER_USERNAME DJANGO_SUPERUSER_EMAIL DJANGO_SUPERUSER_PASSWORD && exec gunicorn config.wsgi:application
     disk:
       name: portfolio-media
       mountPath: /var/data
@@ -19,6 +19,12 @@ services:
         value: "False"
       - key: MEDIA_ROOT
         value: /var/data/media
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
 
 databases:
   - name: portfolio-db
