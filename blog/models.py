@@ -7,15 +7,29 @@ class Post(models.Model):
         DRAFT = "draft", "Borrador"
         PUBLISHED = "published", "Publicado"
 
+    class Theme(models.TextChoices):
+        LIFE = "life", "Vida cotidiana"
+        SCIENCE_OPINION = "science-opinion", "Opinión sobre ciencia"
+        MATHEMATICS = "mathematics", "Matemáticas"
+        EDUCATION = "education", "Educación"
+        OTHER = "other", "Otros temas"
+
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=220, unique=True)
     excerpt = models.TextField(blank=True)
     content = models.TextField()
+    theme = models.CharField(
+        max_length=20,
+        choices=Theme.choices,
+        default=Theme.OTHER,
+        verbose_name="Tema",
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
         default=Status.DRAFT,
     )
+    highlighted = models.BooleanField(default=False, verbose_name="Destacada")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(null=True, blank=True)

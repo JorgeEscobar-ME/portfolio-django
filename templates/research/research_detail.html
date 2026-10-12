@@ -1,12 +1,60 @@
 {% extends "base.html" %}
 {% block title %}{{ item.title }} | Investigación{% endblock %}
+{% block extra_css %}
+<style>
+    .research-detail { max-width: 900px; margin: 4rem auto 0; }
+    .research-detail h1 { font-size: clamp(2.3rem, 5vw, 4rem); line-height: 1.05; letter-spacing: -0.055em; }
+    .research-meta { color: var(--muted); line-height: 1.8; }
+    .research-keywords { padding: 0.8rem 1rem; border-left: 3px solid var(--accent-strong); background: rgba(255, 255, 255, 0.6); color: var(--muted); }
+    .research-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin: 1.5rem 0 2rem; }
+    .research-actions a { display: inline-flex; padding: 0.7rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.72); font-weight: 650; }
+    .research-actions a:hover, .research-actions a:focus-visible { border-color: var(--accent-strong); }
+    .research-abstract, .research-content { font-size: 1.05rem; line-height: 1.8; }
+    .research-content pre { overflow-x: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: #282521; color: #fff8ee; }
+    .research-content code { font-family: "SFMono-Regular", Consolas, monospace; }
+    .research-content :not(pre) > code { padding: 0.15em 0.35em; border-radius: 5px; background: rgba(124, 90, 56, 0.1); }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-tomorrow.min.css">
+{% endblock %}
 {% block content %}
-<article>
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [["\\(", "\\)"], ["$", "$"]],
+            displayMath: [["\\[", "\\]"], ["$$", "$$"]],
+            processEscapes: true
+        },
+        options: {
+            skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+        }
+    };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/prism.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js" data-autoloader-path="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/"></script>
+<article class="research-detail">
     <h1>{{ item.title }}</h1>
-    <p>{{ item.get_topic_display }}{% if item.year %} · {{ item.year }}{% endif %}</p>
-    {% if item.authors %}<p>{{ item.authors }}</p>{% endif %}
-    {% if item.publication %}<p>{{ item.publication }}</p>{% endif %}
-    <div>{{ item.abstract|linebreaks }}</div>
-    {% if item.publication_url %}<p><a href="{{ item.publication_url }}">Ver publicación</a></p>{% endif %}
+    <p class="research-meta">
+        {{ item.get_topic_display }}{% if item.year %} · {{ item.year }}{% endif %}
+        {% if item.authors %}<br>{{ item.authors }}{% endif %}
+        {% if item.publication %}<br>{{ item.publication }}{% endif %}
+    </p>
+    {% if item.keywords %}<p class="research-keywords"><strong>Palabras clave:</strong> {{ item.keywords }}</p>{% endif %}
+    <nav class="research-actions" aria-label="Recursos de investigación">
+        {% if item.publication_url %}<a href="{{ item.publication_url }}" target="_blank" rel="noopener noreferrer">Ver publicación</a>{% endif %}
+        {% if item.doi %}<a href="https://doi.org/{{ item.doi }}" target="_blank" rel="noopener noreferrer">DOI</a>{% endif %}
+        {% if item.pdf_file %}<a href="{% url 'research:pdf' item.slug %}">Descargar PDF</a>{% endif %}
+        {% if item.pdf_url %}<a href="{{ item.pdf_url }}" target="_blank" rel="noopener noreferrer">PDF externo</a>{% endif %}
+        <a href="{% url 'research:citation' item.slug 'bibtex' %}">Descargar BibTeX</a>
+        <a href="{% url 'research:citation' item.slug 'apa' %}">Cita APA</a>
+    </nav>
+    <h2>Resumen</h2>
+    <div class="research-abstract">{{ item.abstract|linebreaks }}</div>
+    {% if rendered_content %}
+        <section class="research-content">
+            <h2>Contenido</h2>
+            {{ rendered_content|safe }}
+        </section>
+    {% endif %}
 </article>
 {% endblock %}

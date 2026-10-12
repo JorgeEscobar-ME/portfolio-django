@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Currículum{% if profile %} | {{ profile.name }}{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cv-page {
+        max-width: 920px;
+        margin: 0 auto;
+        padding-top: 48px;
+    }
+
+    .cv-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+
+    .cv-identity {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        min-width: 0;
+    }
+
+    .cv-photo {
+        width: 132px;
+        height: 164px;
+        flex: 0 0 132px;
+        border: 1px solid rgba(217, 141, 83, 0.28);
+        border-radius: 20px;
+        object-fit: cover;
+        box-shadow: 0 12px 30px rgba(53, 35, 18, 0.12);
+    }
+
+    .cv-heading-copy {
+        min-width: 0;
+    }
+
+    .cv-heading h1 {
+        margin: 12px 0 8px;
+        font-size: clamp(2.8rem, 8vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.07em;
+    }
+
+    .cv-heading p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+    }
+
+    .cv-download {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.8rem 1.1rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), #f7c892 55%, #ff9a69);
+        color: #24170d;
+        font-weight: 750;
+    }
+
+    .cv-contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    .cv-contact a:hover,
+    .cv-contact a:focus-visible {
+        color: #a75f2c;
+        text-decoration: underline;
+    }
+
+    .cv-summary {
+        margin-top: 20px;
+    }
+
+    .cv-section {
+        margin-top: 20px;
+        padding: 26px 30px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 252, 248, 0.91);
+        box-shadow: 0 12px 36px rgba(53, 35, 18, 0.06);
+    }
+
+    .cv-section h2 {
+        margin: 0 0 18px;
+        color: #a75f2c;
+        font-size: 0.82rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .cv-entry {
+        padding: 18px 0 0;
+        margin-top: 17px;
+        border-top: 1px solid rgba(124, 90, 56, 0.12);
+    }
+
+    .cv-entry:first-of-type {
+        padding-top: 0;
+        margin-top: 0;
+        border-top: 0;
+    }
+
+    .cv-entry h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        letter-spacing: -0.025em;
+    }
+
+    .cv-meta {
+        margin: 5px 0 0;
+        color: #8a684d;
+        font-size: 0.9rem;
+    }
+
+    .cv-description {
+        margin: 10px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+        white-space: pre-line;
+    }
+
+    .skill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .skill-list li {
+        padding: 8px 12px;
+        border: 1px solid rgba(217, 141, 83, 0.2);
+        border-radius: 999px;
+        background: rgba(237, 186, 132, 0.12);
+        color: #5a4435;
+        font-size: 0.9rem;
+    }
+
+    .skill-groups {
+        display: grid;
+        gap: 18px;
+    }
+
+    .skill-group h3 {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    .cv-empty {
+        padding: 28px;
+        border: 1px dashed rgba(124, 90, 56, 0.24);
+        border-radius: 20px;
+        color: var(--muted);
+        background: rgba(255, 252, 248, 0.72);
+    }
+
+    @media (max-width: 640px) {
+        .cv-page {
+            padding-top: 28px;
+        }
+
+        .cv-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .cv-identity {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .cv-photo {
+            width: 112px;
+            height: 140px;
+        }
+
+        .cv-section {
+            padding: 22px;
+        }
+    }
+
+    @media print {
+        .site-header,
+        .cv-download,
+        .flow-field {
+            display: none !important;
+        }
+
+        .site-shell,
+        .cv-page {
+            max-width: none;
+            padding: 0;
+        }
+
+        .cv-section {
+            box-shadow: none;
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cv-page">
+    <header class="cv-heading">
+        <div class="cv-identity">
+            {% if profile.cv_photo %}
+                <img class="cv-photo" src="{% url 'core:cv_photo' %}" alt="Foto de {{ profile.name }}">
+            {% endif %}
+            <div class="cv-heading-copy">
+                <span class="eyebrow">Perfil profesional</span>
+                <h1>{% if profile %}{{ profile.name }}{% else %}Currículum{% endif %}</h1>
+                {% if profile.headline %}<p>{{ profile.headline }}</p>{% endif %}
+            </div>
+        </div>
+        <a class="cv-download" href="{% url 'cv:download' %}">Descargar PDF</a>
+    </header>
+
+    {% if profile.public_email or profile.linkedin_url or profile.github_url or profile.orcid_url %}
+        <nav class="cv-contact" aria-label="Contacto y perfiles">
+            {% if profile.public_email %}<a href="mailto:{{ profile.public_email }}">{{ profile.public_email }}</a>{% endif %}
+            {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}">LinkedIn</a>{% endif %}
+            {% if profile.github_url %}<a href="{{ profile.github_url }}">GitHub</a>{% endif %}
+            {% if profile.orcid_url %}<a href="{{ profile.orcid_url }}">ORCID</a>{% endif %}
+        </nav>
+    {% endif %}
+
+    {% if cv_profile.summary or profile.biography %}
+        <section class="cv-section cv-summary" aria-labelledby="cv-summary">
+            <h2 id="cv-summary">Perfil</h2>
+            <p class="cv-description">{{ cv_profile.summary|default:profile.biography|striptags }}</p>
+        </section>
+    {% endif %}
+
+    {% if experiences %}
+        <section class="cv-section" aria-labelledby="cv-experience">
+            <h2 id="cv-experience">Experiencia profesional</h2>
+            {% for item in experiences %}
+                <article class="cv-entry">
+                    <h3>{{ item.role }}</h3>
+                    <p class="cv-meta">
+                        {{ item.organization }}{% if item.location %} · {{ item.location }}{% endif %}
+                        {% if item.dedication %} · {{ item.get_dedication_display }}{% endif %}
+                        {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – Actualidad{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
+                    </p>
+                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if teaching_experiences %}
+        <section class="cv-section" aria-labelledby="cv-teaching">
+            <h2 id="cv-teaching">Experiencia docente</h2>
+            {% for item in teaching_experiences %}
+                <article class="cv-entry">
+                    <h3>{{ item.role }}</h3>
+                    <p class="cv-meta">
+                        {{ item.organization }}{% if item.location %} · {{ item.location }}{% endif %}
+                        {% if item.dedication %} · {{ item.get_dedication_display }}{% endif %}
+                        {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – Actualidad{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
+                    </p>
+                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if education %}
+        <section class="cv-section" aria-labelledby="cv-education">
+            <h2 id="cv-education">Formación académica</h2>
+            {% for item in education %}
+                <article class="cv-entry">
+                    <h3>{{ item.degree }}</h3>
+                    <p class="cv-meta">
+                        {{ item.institution }}{% if item.location %} · {{ item.location }}{% endif %}
+                        {% if item.start_date or item.end_date or item.current %} · {% if item.start_date %}{{ item.start_date|date:"M Y" }}{% endif %}{% if item.current %} – En curso{% elif item.end_date %} – {{ item.end_date|date:"M Y" }}{% endif %}{% endif %}
+                    </p>
+                    {% if item.details %}<p class="cv-description">{{ item.details|striptags }}</p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if skills %}
+        <section class="cv-section" aria-labelledby="cv-skills">
+            <h2 id="cv-skills">Habilidades</h2>
+            <div class="skill-groups">
+                {% regroup skills by get_category_display as skill_groups %}
+                {% for group in skill_groups %}
+                    <div class="skill-group">
+                        <h3>{{ group.grouper }}</h3>
+                        <ul class="skill-list">
+                            {% for skill in group.list %}
+                                <li>{{ skill.name }}{% if skill.proficiency %} · {{ skill.proficiency }}{% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if certifications %}
+        <section class="cv-section" aria-labelledby="cv-certifications">
+            <h2 id="cv-certifications">Certificaciones</h2>
+            {% for item in certifications %}
+                <article class="cv-entry">
+                    <h3>{{ item.title }}</h3>
+                    <p class="cv-meta">{{ item.issuer }}{% if item.issued_on %} · {{ item.issued_on|date:"M Y" }}{% endif %}</p>
+                    {% if item.credential_url %}<p class="cv-description"><a href="{{ item.credential_url }}">Ver credencial</a></p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if research_products %}
+        <section class="cv-section" aria-labelledby="cv-research-products">
+            <h2 id="cv-research-products">Productos de investigación</h2>
+            {% for item in research_products %}
+                <article class="cv-entry">
+                    <h3>
+                        {% if item.product_url %}<a href="{{ item.product_url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}
+                    </h3>
+                    <p class="cv-meta">{{ item.get_product_type_display }}{% if item.venue %} · {{ item.venue }}{% endif %}{% if item.year %} · {{ item.year }}{% endif %}</p>
+                    {% if item.authors %}<p class="cv-meta">{{ item.authors }}</p>{% endif %}
+                    {% if item.identifier %}<p class="cv-meta">{{ item.identifier }}</p>{% endif %}
+                    {% if item.description %}<p class="cv-description">{{ item.description|striptags }}</p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if not experiences and not teaching_experiences and not education and not skills and not certifications and not research_products %}
+        <p class="cv-empty">El currículum aún no tiene entradas. Puedes agregar experiencia, formación, habilidades, certificaciones y productos de investigación desde Django Admin.</p>
+    {% endif %}
+</div>
+{% endblock %}

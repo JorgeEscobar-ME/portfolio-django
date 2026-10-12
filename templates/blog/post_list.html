@@ -1,14 +1,40 @@
 {% extends "base.html" %}
 {% block title %}Blog | Portafolio{% endblock %}
+{% block extra_css %}
+<style>
+    .blog-page { max-width: 900px; margin: 4rem auto 0; }
+    .theme-filters { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: 1.5rem 0 2rem; }
+    .theme-filters a { display: inline-flex; padding: 0.65rem 0.95rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.72); color: var(--muted); font-size: 0.9rem; font-weight: 650; }
+    .theme-filters a:hover, .theme-filters a:focus-visible, .theme-filters a[aria-current="true"] { border-color: var(--accent-strong); background: var(--accent-soft); color: var(--text); }
+    .post-list { display: grid; gap: 1rem; }
+    .post-card { padding: 1.25rem 1.4rem; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, 0.8); }
+    .post-card h2 { margin: 0 0 0.5rem; font-size: 1.35rem; }
+    .post-card-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; color: var(--muted); font-size: 0.88rem; }
+    .post-card p { margin-bottom: 0; line-height: 1.65; }
+</style>
+{% endblock %}
 {% block content %}
-<h1>Blog</h1>
-{% for post in posts %}
-    <article>
-        <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
-        {% if post.published_at %}<time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j F Y" }}</time>{% endif %}
-        <p>{{ post.excerpt|default:post.content|truncatewords:40 }}</p>
-    </article>
-{% empty %}
-    <p>Aún no hay publicaciones.</p>
-{% endfor %}
+<main class="blog-page">
+    <h1>Blog</h1>
+    <nav class="theme-filters" aria-label="Filtrar publicaciones por tema">
+        <a href="{% url 'blog:list' %}"{% if not selected_theme %} aria-current="true"{% endif %}>Todos</a>
+        {% for value, label in themes %}
+            <a href="{% url 'blog:list' %}?tema={{ value }}"{% if selected_theme == value %} aria-current="true"{% endif %}>{{ label }}</a>
+        {% endfor %}
+    </nav>
+    <section class="post-list" aria-label="Publicaciones">
+        {% for post in posts %}
+            <article class="post-card">
+                <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+                <div class="post-card-meta">
+                    <span>{{ post.get_theme_display }}</span>
+                    <time datetime="{{ post.display_date|date:'c' }}">{{ post.display_date|date:"Y-m-d" }}</time>
+                </div>
+                {% if post.excerpt %}<p>{{ post.excerpt }}</p>{% endif %}
+            </article>
+        {% empty %}
+            <p>Aún no hay publicaciones para este tema.</p>
+        {% endfor %}
+    </section>
+</main>
 {% endblock %}

@@ -4,16 +4,250 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Portafolio{% endblock %}</title>
+    <meta name="description" content="Portfolio personal con investigación, proyectos y escritura.">
+    <style>
+        :root {
+            --bg: #f7f3ee;
+            --bg-alt: #fffaf4;
+            --panel: rgba(255, 255, 255, 0.9);
+            --panel-strong: rgba(255, 255, 255, 0.98);
+            --line: rgba(124, 90, 56, 0.15);
+            --text: #000000;
+            --muted: #5a4435;
+            --accent: #EDBA84;
+            --accent-strong: #e69e58;
+            --accent-soft: rgba(237, 186, 132, 0.14);
+            --shadow: 0 20px 60px rgba(53, 35, 18, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, "Segoe UI", sans-serif;
+            background-color: #f6efe8;
+            color: var(--text);
+            isolation: isolate;
+        }
+
+        .flow-field {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .flow-field svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .flow-line {
+            fill: none;
+            stroke: #cf8953;
+            stroke-width: 1.5;
+            stroke-dasharray: 14 16;
+            stroke-linecap: round;
+            opacity: 0.23;
+            animation: flow-forward 14s linear infinite;
+        }
+
+        .flow-line--reverse {
+            animation-name: flow-reverse;
+            animation-duration: 17s;
+        }
+
+        .flow-orbit {
+            fill: none;
+            stroke: #d98d53;
+            stroke-width: 1.3;
+            stroke-dasharray: 12 18;
+            stroke-linecap: round;
+            opacity: 0.2;
+            animation: flow-forward 22s linear infinite;
+        }
+
+        @keyframes flow-forward {
+            to { stroke-dashoffset: -150; }
+        }
+
+        @keyframes flow-reverse {
+            to { stroke-dashoffset: 150; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .flow-line,
+            .flow-orbit {
+                animation: none;
+            }
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-shell {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 0 24px 72px;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(16px);
+            background: rgba(255, 251, 247, 0.8);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .topbar {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            font-size: 1.15rem;
+            color: var(--text);
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(237, 186, 132, 0.3), rgba(247, 108, 66, 0.14));
+            color: var(--accent);
+            border: 1px solid rgba(237, 186, 132, 0.32);
+            font-size: 0.8rem;
+        }
+
+        .brand-portrait {
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
+            border: 1px solid rgba(237, 186, 132, 0.45);
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .main-nav a {
+            transition: color 0.2s ease;
+        }
+
+        .main-nav a:hover,
+        .main-nav a:focus-visible {
+            color: var(--text);
+        }
+
+        .nav-pill {
+            border: 1px solid rgba(237, 186, 132, 0.28);
+            background: rgba(237, 186, 132, 0.12);
+            color: var(--text);
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+        }
+
+        @media (max-width: 640px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .main-nav {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header>
-        <a href="{% url 'core:home' %}">Portafolio</a>
-        <nav aria-label="Navegación principal">
-            <a href="{% url 'blog:list' %}">Blog</a>
-            <a href="{% url 'research:list' %}">Investigación</a>
-            <a href="{% url 'projects:list' %}">Proyectos</a>
-        </nav>
+    <div class="flow-field" aria-hidden="true">
+        <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+            <g class="flow-line">
+                <path d="M-80 5 C170 5 285 65 425 220 C550 360 635 405 720 405 C805 405 890 360 1015 220 C1155 65 1270 5 1520 5"/>
+                <path d="M-80 40 C180 40 290 95 430 250 C555 388 635 430 720 430 C805 430 885 388 1010 250 C1150 95 1260 40 1520 40"/>
+                <path d="M-80 110 C180 110 285 150 420 295 C545 425 635 465 720 465 C805 465 895 425 1020 295 C1155 150 1260 110 1520 110"/>
+                <path d="M-80 140 C180 140 280 190 410 330 C520 450 620 480 720 480 C820 480 920 450 1030 330 C1160 190 1260 140 1520 140"/>
+                <path d="M-80 205 C160 205 270 245 400 365 C520 475 625 500 720 500 C815 500 920 475 1040 365 C1170 245 1280 205 1520 205"/>
+                <path d="M-80 250 C160 250 270 280 395 390 C515 495 625 520 720 520 C815 520 925 495 1045 390 C1170 280 1280 250 1520 250"/>
+                <path d="M-80 390 C160 390 270 400 400 445 C530 490 625 545 720 545 C815 545 910 490 1040 445 C1170 400 1280 390 1520 390"/>
+                <path d="M-80 735 C180 735 285 690 415 555 C535 430 625 395 720 395 C815 395 905 430 1025 555 C1155 690 1260 735 1520 735"/>
+                <path d="M-80 760 C180 760 280 710 410 570 C520 450 620 420 720 420 C820 420 920 450 1030 570 C1160 710 1260 760 1520 760"/>
+                <path d="M-80 815 C180 815 290 770 425 625 C550 490 635 450 720 450 C805 450 890 490 1015 625 C1150 770 1260 815 1520 815"/>
+                <path d="M-80 860 C180 860 290 820 430 675 C555 540 635 500 720 500 C805 500 885 540 1010 675 C1150 820 1260 860 1520 860"/>
+                <path d="M-80 300 C160 300 260 330 390 410 C520 490 620 510 720 510 C820 510 920 490 1050 410 C1180 330 1280 300 1520 300"/>
+                <path d="M-80 350 C160 350 260 370 390 430 C520 490 620 530 720 530 C820 530 920 490 1050 430 C1180 370 1280 350 1520 350"/>
+            </g>
+            <g class="flow-line flow-line--reverse">
+                <path d="M-80 550 C160 550 260 530 390 470 C520 410 620 370 720 370 C820 370 920 410 1050 470 C1180 530 1280 550 1520 550"/>
+                <path d="M-80 450 C180 450 330 450 470 450 C580 450 650 450 720 450 C790 450 860 450 970 450 C1110 450 1260 450 1520 450"/>
+                <path d="M-80 395 C180 395 330 405 470 430 C580 450 650 465 720 465 C790 465 860 450 970 430 C1110 405 1260 395 1520 395"/>
+                <path d="M-80 705 C180 705 330 685 470 650 C580 620 650 600 720 600 C790 600 860 620 970 650 C1110 685 1260 705 1520 705"/>
+                <path d="M-80 100 C100 100 230 160 330 280 C420 385 480 520 590 620 C690 710 820 710 920 620 C1030 520 1090 385 1190 280 C1290 160 1420 100 1520 100"/>
+                <path d="M-80 800 C100 800 230 740 330 620 C420 515 480 380 590 280 C690 190 820 190 920 280 C1030 380 1090 515 1190 620 C1290 740 1420 800 1520 800"/>
+            </g>
+            <g class="flow-orbit">
+                <ellipse cx="300" cy="450" rx="105" ry="72"/>
+                <ellipse cx="300" cy="450" rx="170" ry="118"/>
+                <ellipse cx="1150" cy="450" rx="105" ry="72"/>
+                <ellipse cx="1150" cy="450" rx="170" ry="118"/>
+            </g>
+            <g fill="#d99760" opacity=".28">
+                <circle cx="300" cy="450" r="3"/>
+                <circle cx="720" cy="450" r="3"/>
+                <circle cx="1150" cy="450" r="3"/>
+            </g>
+        </svg>
+    </div>
+    <header class="site-header">
+        <div class="topbar">
+            <a href="{% url 'core:home' %}" class="brand" aria-label="Ir al inicio">
+                {% if site_profile.portrait %}
+                    <img class="brand-portrait" src="{% url 'core:portrait' %}" alt="">
+                {% else %}
+                    <span class="brand-mark">P</span>
+                {% endif %}
+                <span>Portafolio</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegación principal">
+                <a href="{% url 'blog:list' %}">Blog</a>
+                <a href="{% url 'research:list' %}">Investigación</a>
+                <a href="{% url 'projects:list' %}">Proyectos</a>
+                <a href="{% url 'cv:detail' %}">CV</a>
+                <a href="{% url 'core:home' %}" class="nav-pill">Inicio</a>
+            </nav>
+        </div>
     </header>
-    <main>{% block content %}{% endblock %}</main>
+    <main class="site-shell">{% block content %}{% endblock %}</main>
 </body>
 </html>

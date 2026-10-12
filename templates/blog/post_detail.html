@@ -1,9 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ post.title }} | Blog{% endblock %}
 {% block content %}
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [["\\(", "\\)"], ["$", "$"]],
+            displayMath: [["\\[", "\\]"], ["$$", "$$"]],
+            processEscapes: true
+        },
+        options: {
+            skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+        }
+    };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <article>
     <h1>{{ post.title }}</h1>
     {% if post.published_at %}<time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j F Y" }}</time>{% endif %}
-    <div>{{ post.content|linebreaks }}</div>
+    <div class="post-content">{{ rendered_content|safe }}</div>
 </article>
 {% endblock %}

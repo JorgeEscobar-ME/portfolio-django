@@ -4,6 +4,10 @@ services:
     runtime: python
     buildCommand: bash build.sh
     startCommand: python manage.py migrate --noinput && gunicorn config.wsgi:application
+    disk:
+      name: portfolio-media
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -13,6 +17,8 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      - key: MEDIA_ROOT
+        value: /var/data/media
 
 databases:
   - name: portfolio-db
