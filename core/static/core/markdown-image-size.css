@@ -1,0 +1,57 @@
+.markdown-image-size-dialog {
+    width: min(24rem, calc(100% - 2rem));
+    padding: 1.5rem;
+    border: 1px solid #d0d7de;
+    border-radius: 0.75rem;
+    color: #1f2328;
+    box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
+}
+
+.markdown-image-size-dialog::backdrop {
+    background: rgb(0 0 0 / 45%);
+}
+
+.markdown-image-size-dialog__form {
+    display: grid;
+    gap: 1rem;
+}
+
+.markdown-image-size-dialog__form h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.markdown-image-size-dialog__form label {
+    font-weight: 600;
+}
+
+.markdown-image-size-dialog__form input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #8c959f;
+    border-radius: 0.4rem;
+    font: inherit;
+}
+
+.markdown-image-size-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.markdown-image-size-dialog__actions button {
+    padding: 0.55rem 0.9rem;
+    border: 1px solid #8c959f;
+    border-radius: 0.4rem;
+    background: #fff;
+    color: #1f2328;
+    font: inherit;
+    cursor: pointer;
+}
+
+.markdown-image-size-dialog__actions .markdown-image-size-dialog__apply {
+    border-color: #0969da;
+    background: #0969da;
+    color: #fff;
+}

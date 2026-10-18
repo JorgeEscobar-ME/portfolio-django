@@ -25,7 +25,8 @@ class ResearchItemTests(TestCase):
             content=(
                 "Un resultado con $x^2$.\n\n"
                 "$$\ny = mx + b\n$$\n\n"
-                "```python\nprint('hola')\n```"
+                "```python\nprint('hola')\n```\n\n"
+                "![Diagrama](https://example.com/diagram.png){ width=520 }"
             ),
             authors="Escobar, J. A.",
             publication="Revista de prueba",
@@ -42,6 +43,10 @@ class ResearchItemTests(TestCase):
         self.assertIn(r"\(x^2\)", page)
         self.assertIn(r"\[" + "\ny = mx + b\n" + r"\]", page)
         self.assertIn('class="language-python"', page)
+        self.assertIn(
+            '<img alt="Diagrama" src="https://example.com/diagram.png" width="520">',
+            page,
+        )
         self.assertContains(response, "Escobar, J. A.")
         self.assertContains(response, "10.1234/example")
         self.assertContains(response, "Descargar BibTeX")

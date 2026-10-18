@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "|",
             "link",
             "image",
+            window.createImageSizeToolbarButton(),
             "table",
             "code",
             "horizontal-rule",

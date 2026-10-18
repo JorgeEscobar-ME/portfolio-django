@@ -1,5 +1,11 @@
-from django.test import TestCase
+from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from .models import Project
 
@@ -24,6 +30,14 @@ class HomePageProjectTests(TestCase):
         )
 
 
+@override_settings(
+    STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+)
 class ProjectDetailTests(TestCase):
     def test_project_detail_renders_markdown_latex_and_sanitizes_html(self):
         project = Project.objects.create(
@@ -35,6 +49,7 @@ class ProjectDetailTests(TestCase):
                 "# Método\n\n"
                 "Una ecuación $x_1$.\n\n"
                 "$$\n\\frac{a}{b}\n$$\n\n"
+                "![Diagrama](https://example.com/diagram.png){ width=460 }\n\n"
                 '<img src=x onerror="alert(1)">'
             ),
         )
@@ -45,6 +60,10 @@ class ProjectDetailTests(TestCase):
         self.assertContains(response, "<h1>Método</h1>", html=True)
         self.assertIn(r"\(x_1\)", response.content.decode())
         self.assertIn(r"\frac{a}{b}", response.content.decode())
+        self.assertIn(
+            '<img alt="Diagrama" src="https://example.com/diagram.png" width="460">',
+            response.content.decode(),
+        )
         self.assertNotIn("onerror", response.content.decode())
 
     def test_project_detail_embeds_only_valid_youtube_video_urls(self):
@@ -70,7 +89,7 @@ class ProjectDetailTests(TestCase):
         self.assertContains(response, "Resultado principal")
         self.assertContains(response, "Conclusión")
 
-    def test_project_detail_displays_python_code_without_running_it(self):
+    def test_project_detail_displays_fixed_code_and_isolated_python_runner(self):
         code = 'print("<script>alert(1)</script>")'
         project = Project.objects.create(
             title="Proyecto con Python",
@@ -86,6 +105,24 @@ class ProjectDetailTests(TestCase):
         self.assertContains(response, "&lt;script&gt;alert(1)&lt;/script&gt;")
         self.assertNotContains(response, "<script>alert(1)</script>")
         self.assertContains(response, project.notebook_url)
+        self.assertContains(response, 'sandbox="allow-scripts"')
+        self.assertContains(response, "project-python-runner.js")
+        self.assertContains(response, "Ejecutar código")
+        self.assertNotContains(response, "contenteditable")
+        self.assertNotContains(response, '<textarea')
+
+    def test_project_without_python_code_has_no_python_runner(self):
+        project = Project.objects.create(
+            title="Proyecto sin código",
+            slug="proyecto-sin-codigo",
+            summary="Resumen",
+            description="Descripción",
+        )
+
+        response = self.client.get(project.get_absolute_url())
+
+        self.assertNotContains(response, "data-python-runner")
+        self.assertNotContains(response, "project-python-runner.js")
 
     def test_draft_projects_are_not_visible_in_list_or_detail(self):
         project = Project.objects.create(
@@ -112,3 +149,56 @@ class ProjectDetailTests(TestCase):
         )
 
         self.assertEqual(project.youtube_embed_url, "")
+
+
+class ProjectCardTests(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="Proyecto de muestra",
+            slug="proyecto-de-muestra",
+            summary="Un resumen para la tarjeta",
+            description="Descripción",
+        )
+
+    def test_project_without_image_uses_card_fallback(self):
+        response = self.client.get(reverse("projects:list"))
+
+        self.assertContains(response, "project-card__placeholder")
+        self.assertContains(response, "Ver proyecto")
+        self.assertNotContains(response, "proyecto-de-muestra/imagen/")
+
+    def test_project_with_image_shows_image_in_card_and_detail(self):
+        image_buffer = BytesIO()
+        Image.new("RGB", (320, 200), color=(237, 186, 132)).save(
+            image_buffer,
+            format="PNG",
+        )
+        image_file = SimpleUploadedFile(
+            "cover.png",
+            image_buffer.getvalue(),
+            content_type="image/png",
+        )
+
+        with TemporaryDirectory() as media_directory:
+            with override_settings(MEDIA_ROOT=Path(media_directory)):
+                self.project.cover_image = image_file
+                self.project.save()
+
+                list_response = self.client.get(reverse("projects:list"))
+                detail_response = self.client.get(self.project.get_absolute_url())
+                image_response = self.client.get(self.project.get_cover_image_url())
+
+                self.assertContains(
+                    list_response,
+                    self.project.get_cover_image_url(),
+                )
+                self.assertContains(
+                    detail_response,
+                    self.project.get_cover_image_url(),
+                )
+                self.assertEqual(image_response.status_code, 200)
+                self.assertEqual(image_response["Content-Type"], "image/png")
+                self.assertEqual(
+                    b"".join(image_response.streaming_content),
+                    image_buffer.getvalue(),
+                )

@@ -41,6 +41,20 @@ _ALLOWED_TAGS = {
 }
 
 
+def _allowed_post_attribute(tag, name, value):
+    if tag == "img":
+        if name in {"src", "alt", "title"}:
+            return True
+        return name == "width" and value.isdecimal() and 100 <= int(value) <= 900
+    return (tag, name) in {
+        ("a", "href"),
+        ("a", "title"),
+        ("code", "class"),
+        ("pre", "class"),
+        ("span", "class"),
+    }
+
+
 def render_post_content(content):
     nonce = uuid.uuid4().hex
     math_expressions = {}
@@ -61,7 +75,7 @@ def render_post_content(content):
     source = _MATH_PATTERN.sub(preserve_math, content)
     rendered = markdown.markdown(
         source,
-        extensions=["fenced_code", "nl2br", "sane_lists", "tables"],
+        extensions=["attr_list", "fenced_code", "nl2br", "sane_lists", "tables"],
     )
     for token, expression in math_expressions.items():
         rendered = rendered.replace(token, expression)
@@ -69,13 +83,7 @@ def render_post_content(content):
     return bleach.clean(
         rendered,
         tags=_ALLOWED_TAGS,
-        attributes={
-            "a": ["href", "title"],
-            "code": ["class"],
-            "img": ["src", "alt", "title"],
-            "pre": ["class"],
-            "span": ["class"],
-        },
+        attributes=_allowed_post_attribute,
         protocols=["http", "https", "mailto"],
         strip=True,
     )

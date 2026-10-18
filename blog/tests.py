@@ -1,12 +1,44 @@
 from datetime import datetime, timezone
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import Post
 
 
 class PostVisibilityTests(TestCase):
+    def test_admin_content_editor_loads_image_size_tool(self):
+        from django.contrib.auth import get_user_model
+
+        admin_user = get_user_model().objects.create_superuser(
+            username="image-editor-admin",
+            email="image-editor-admin@example.com",
+            password="test-password",
+        )
+        post = Post.objects.create(
+            title="Editor de imagen",
+            slug="editor-de-imagen",
+            content="Contenido",
+        )
+        self.client.force_login(admin_user)
+
+        with override_settings(
+            STORAGES={
+                "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+                "staticfiles": {
+                    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                },
+            }
+        ):
+            response = self.client.get(
+                reverse("admin:blog_post_change", args=[post.pk])
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "markdown-image-size-dialog.js")
+        self.assertContains(response, "markdown-image-size.css")
+        self.assertContains(response, "admin-post-editor-image-size.js")
+
     def test_blog_list_filters_published_posts_by_theme(self):
         science_post = Post.objects.create(
             title="Opinión sobre ciencia",
@@ -100,6 +132,39 @@ class PostVisibilityTests(TestCase):
 
         self.assertContains(response, "Primera línea<br>")
         self.assertContains(response, "Segunda línea")
+
+    def test_post_images_are_rendered_with_safe_optional_width(self):
+        post = Post.objects.create(
+            title="Publicación con imágenes",
+            slug="publicacion-con-imagenes",
+            content=(
+                "![Imagen válida](https://example.com/valid.png){ width=480 }\n\n"
+                "![Imagen demasiado ancha](https://example.com/large.png){ width=1200 }"
+            ),
+            status=Post.Status.PUBLISHED,
+        )
+
+        response = self.client.get(post.get_absolute_url())
+        page = response.content.decode()
+
+        self.assertContains(
+            response,
+            '<img alt="Imagen válida" src="https://example.com/valid.png" width="480">',
+            html=True,
+        )
+        self.assertContains(response, '<img alt="Imagen demasiado ancha" src="https://example.com/large.png">', html=True)
+        self.assertContains(response, ".post-content img")
+        self.assertContains(response, "max-width: min(100%, 900px)")
+        self.assertNotIn('width="1200"', page)
+
+    def test_post_image_width_rejects_non_numeric_or_out_of_range_values(self):
+        from .formatting import render_post_content
+
+        rendered = render_post_content(
+            "![Unsafe](https://example.com/image.png){ width=9000 }"
+        )
+
+        self.assertNotIn("width=", rendered)
 
 
 class HomePageTests(TestCase):

@@ -1,7 +1,17 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ project.title }} | Proyectos{% endblock %}
 {% block content %}
 <style>
+    .project-detail__cover {
+        display: block;
+        width: 100%;
+        max-height: 460px;
+        margin: 1.25rem 0;
+        border-radius: 18px;
+        object-fit: cover;
+    }
+
     .project-video {
         aspect-ratio: 16 / 9;
         max-width: 900px;
@@ -11,6 +21,60 @@
         width: 100%;
         height: 100%;
         border: 0;
+    }
+
+    .python-runner {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border: 1px solid rgba(124, 90, 56, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 250, 244, 0.92);
+    }
+
+    .python-runner__controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .python-runner__button {
+        padding: 0.65rem 1rem;
+        border: 1px solid rgba(124, 90, 56, 0.28);
+        border-radius: 8px;
+        background: #edba84;
+        color: #000;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .python-runner__button:disabled {
+        cursor: wait;
+        opacity: 0.6;
+    }
+
+    .python-runner__status {
+        color: #5a4435;
+    }
+
+    .python-runner__output {
+        min-height: 3rem;
+        max-height: 24rem;
+        overflow: auto;
+        padding: 1rem;
+        border-radius: 8px;
+        background: #171717;
+        color: #f2f2f2;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .python-runner__plots img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 1rem 0;
+        background: #fff;
     }
 </style>
 {% if rendered_article_content %}
@@ -30,6 +94,12 @@
 {% endif %}
 <article>
     <h1>{{ project.title }}</h1>
+    {% if project.cover_image %}
+        <img
+            class="project-detail__cover"
+            src="{{ project.get_cover_image_url }}"
+            alt="Portada del proyecto {{ project.title }}">
+    {% endif %}
     <p>{{ project.summary }}</p>
     {% if project.authors %}<p><strong>Autores:</strong> {{ project.authors }}</p>{% endif %}
     {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
@@ -75,13 +145,55 @@
         <section aria-labelledby="project-code-heading">
             <h2 id="project-code-heading">Código Python</h2>
             <pre><code>{{ project.python_code }}</code></pre>
-            <p>El código se muestra como texto y no se ejecuta en este sitio.</p>
+            <section
+                class="python-runner"
+                data-python-runner
+                aria-labelledby="python-runner-heading">
+                <h3 id="python-runner-heading">Ejecutar código</h3>
+                <p>
+                    El código es de solo lectura y se ejecuta en un entorno aislado
+                    de tu navegador. No se ejecuta en el servidor.
+                </p>
+                <p>
+                    Incluye Python estándar y carga NumPy, SciPy o Matplotlib
+                    cuando el código los importa. PyTorch y otros paquetes grandes
+                    no están disponibles en este entorno.
+                </p>
+                <div class="python-runner__controls">
+                    <button class="python-runner__button" type="button" data-run disabled>
+                        Cargando Python...
+                    </button>
+                    <button class="python-runner__button" type="button" data-stop disabled>
+                        Detener
+                    </button>
+                    <span class="python-runner__status" data-status role="status" aria-live="polite">
+                        Preparando el entorno de Python...
+                    </span>
+                </div>
+                <pre class="python-runner__output" data-output aria-label="Salida de Python"></pre>
+                <div class="python-runner__plots" data-plots aria-label="Gráficas generadas"></div>
+                <iframe
+                    data-runner-frame
+                    title="Entorno aislado para ejecutar Python"
+                    sandbox="allow-scripts"
+                    referrerpolicy="no-referrer"
+                    hidden>
+                </iframe>
+            </section>
+            {{ project.python_code|json_script:"project-python-code" }}
             {% if project.notebook_url %}
                 <p><a href="{{ project.notebook_url }}" target="_blank" rel="noopener noreferrer">Abrir cuaderno en Google Colab</a></p>
             {% endif %}
+            <p>
+                Ejecutar código publicado implica confiar en su autor. Revisa el
+                código antes de ejecutarlo.
+            </p>
         </section>
     {% endif %}
     {% if project.repository_url %}<p><a href="{{ project.repository_url }}" target="_blank" rel="noopener noreferrer">Código fuente</a></p>{% endif %}
     {% if project.demo_url %}<p><a href="{{ project.demo_url }}" target="_blank" rel="noopener noreferrer">Ver implementación</a></p>{% endif %}
 </article>
+{% if project.python_code %}
+    <script defer src="{% static 'projects/project-python-runner.js' %}"></script>
+{% endif %}
 {% endblock %}

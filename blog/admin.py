@@ -14,7 +14,10 @@ class PostAdminForm(forms.ModelForm):
         help_texts = {
             "content": (
                 "Escribe en Markdown. Usa $...$ para fórmulas en línea y "
-                "$$...$$ para fórmulas en bloque."
+                "$$...$$ para fórmulas en bloque. Las imágenes se centran y "
+                "limitan automáticamente (máximo 900 px). Para cambiar el "
+                "ancho de cada imagen, selecciónala y usa el botón "
+                "«Tamaño de imagen»."
             ),
         }
 
@@ -31,9 +34,11 @@ class PostAdmin(admin.ModelAdmin):
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.css",
+                "core/markdown-image-size.css",
             ),
         }
         js = (
             "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.js",
-            "blog/admin-post-editor.js",
+            "core/markdown-image-size-dialog.js",
+            "blog/admin-post-editor-image-size.js",
         )

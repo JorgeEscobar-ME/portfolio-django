@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import Project
 
@@ -20,7 +21,13 @@ class ProjectAdminForm(forms.ModelForm):
             "main_results": "Describe los resultados principales del proyecto.",
             "conclusions": "Describe las conclusiones del proyecto.",
             "python_code": (
-                "El código solo se muestra como texto y nunca se ejecuta en este sitio."
+                "El código publicado se ejecuta en el navegador del visitante dentro "
+                "de un iframe aislado. Revísalo antes de publicarlo."
+            ),
+            "article_content": (
+                "Escribe en Markdown. Usa $...$ y $$...$$ para fórmulas. Las "
+                "imágenes se centran y limitan automáticamente (máximo 900 px). "
+                "Selecciona una imagen y usa «Tamaño de imagen» para ajustar su ancho."
             ),
             "notebook_url": (
                 "Enlaza un cuaderno de Google Colab si quieres permitir que se ejecute "
@@ -43,7 +50,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "video_summary",
     )
     prepopulated_fields = {"slug": ("title",)}
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "cover_preview")
     fieldsets = (
         (
             "Información del proyecto",
@@ -55,6 +62,8 @@ class ProjectAdmin(admin.ModelAdmin):
                     "description",
                     "authors",
                     "technologies",
+                    "cover_image",
+                    "cover_preview",
                 )
             },
         ),
@@ -94,9 +103,21 @@ class ProjectAdmin(admin.ModelAdmin):
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.css",
+                "core/markdown-image-size.css",
             ),
         }
         js = (
             "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.js",
+            "core/markdown-image-size-dialog.js",
             "projects/admin-project-editor.js",
+        )
+
+    @admin.display(description="Vista previa de imagen")
+    def cover_preview(self, obj):
+        if not obj or not obj.cover_image:
+            return "No hay una imagen cargada. La tarjeta usará el diseño alternativo."
+        return format_html(
+            '<img src="{}" alt="" style="width: 280px; max-height: 180px; '
+            'object-fit: cover; border-radius: 12px;">',
+            obj.get_cover_image_url(),
         )

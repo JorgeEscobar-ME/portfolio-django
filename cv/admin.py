@@ -33,9 +33,24 @@ class CVMarkdownForm(forms.ModelForm):
             "details": forms.Textarea(attrs={"rows": 12, "class": "markdown-editor"}),
         }
         help_texts = {
-            "summary": "Admite Markdown, incluidas listas, negritas y enlaces.",
-            "description": "Admite Markdown, incluidas listas, negritas y enlaces.",
-            "details": "Admite Markdown, incluidas listas, negritas y enlaces.",
+            "summary": (
+                "Admite Markdown, listas, negritas, enlaces e imágenes. Las imágenes "
+                "se centran y limitan automáticamente (máximo 900 px); selecciona "
+                "una imagen y usa el botón "
+                "«Tamaño de imagen» para ajustar su ancho."
+            ),
+            "description": (
+                "Admite Markdown, listas, negritas, enlaces e imágenes. Las imágenes "
+                "se centran y limitan automáticamente (máximo 900 px); selecciona "
+                "una imagen y usa el botón "
+                "«Tamaño de imagen» para ajustar su ancho."
+            ),
+            "details": (
+                "Admite Markdown, listas, negritas, enlaces e imágenes. Las imágenes "
+                "se centran y limitan automáticamente (máximo 900 px); selecciona "
+                "una imagen y usa el botón "
+                "«Tamaño de imagen» para ajustar su ancho."
+            ),
         }
 
 
@@ -68,10 +83,12 @@ class CVMarkdownEditorAdminMixin:
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.css",
+                "core/markdown-image-size.css",
             ),
         }
         js = (
             "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.js",
+            "core/markdown-image-size-dialog.js",
             "cv/admin-cv-editor.js",
         )
 

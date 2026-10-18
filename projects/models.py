@@ -14,6 +14,12 @@ class Project(models.Model):
     slug = models.SlugField(max_length=220, unique=True)
     summary = models.CharField(max_length=300)
     description = models.TextField()
+    cover_image = models.ImageField(
+        upload_to="projects/covers/%Y/",
+        blank=True,
+        verbose_name="Imagen de portada",
+        help_text="Imagen opcional que aparecerá en la tarjeta del proyecto.",
+    )
     authors = models.CharField(max_length=300, blank=True, verbose_name="Autores")
     article_content = models.TextField(
         blank=True,
@@ -45,6 +51,11 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         return reverse("projects:detail", kwargs={"slug": self.slug})
+
+    def get_cover_image_url(self):
+        if not self.cover_image:
+            return ""
+        return reverse("projects:cover", kwargs={"slug": self.slug})
 
     @property
     def youtube_embed_url(self):

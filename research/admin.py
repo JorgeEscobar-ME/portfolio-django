@@ -11,6 +11,13 @@ class ResearchItemAdminForm(forms.ModelForm):
         widgets = {
             "content": forms.Textarea(attrs={"rows": 30}),
         }
+        help_texts = {
+            "content": (
+                "Escribe en Markdown. Las imágenes se centran y limitan "
+                "automáticamente (máximo 900 px). Para cambiar el ancho de cada "
+                "imagen, selecciónala y usa el botón «Tamaño de imagen»."
+            ),
+        }
 
 
 @admin.register(ResearchItem)
@@ -25,9 +32,11 @@ class ResearchItemAdmin(admin.ModelAdmin):
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.css",
+                "core/markdown-image-size.css",
             ),
         }
         js = (
             "https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.js",
-            "blog/admin-post-editor.js",
+            "core/markdown-image-size-dialog.js",
+            "blog/admin-post-editor-image-size.js",
         )

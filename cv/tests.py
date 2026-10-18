@@ -124,6 +124,24 @@ class CVPageTests(TestCase):
         self.assertNotIn("<script>", rendered)
         self.assertNotIn('href="javascript:', rendered)
 
+    def test_cv_markdown_renders_safely_sized_images_and_pdf_uses_alt_text(self):
+        from .formatting import markdown_to_reportlab_flowables, render_cv_markdown
+        from .views import _pdf_styles
+
+        markdown_source = (
+            "![Diagrama](https://example.com/diagram.png){ width=440 }"
+        )
+        rendered = render_cv_markdown(markdown_source)
+
+        self.assertIn(
+            '<img alt="Diagrama" src="https://example.com/diagram.png" width="440">',
+            rendered,
+        )
+        self.assertEqual(
+            markdown_to_reportlab_flowables(markdown_source, _pdf_styles())[0].getPlainText(),
+            "Diagrama",
+        )
+
     def test_admin_experience_form_loads_markdown_editor_for_description(self):
         admin_user = get_user_model().objects.create_superuser(
             username="cv-editor-admin",
@@ -132,16 +150,26 @@ class CVPageTests(TestCase):
         )
         self.client.force_login(admin_user)
 
-        response = self.client.get(
-            reverse(
-                "admin:cv_experience_change",
-                args=[Experience.objects.first().pk],
+        with override_settings(
+            STORAGES={
+                "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+                "staticfiles": {
+                    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                },
+            }
+        ):
+            response = self.client.get(
+                reverse(
+                    "admin:cv_experience_change",
+                    args=[Experience.objects.first().pk],
+                )
             )
-        )
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "markdown-editor")
         self.assertContains(response, "easymde.min.js")
+        self.assertContains(response, "markdown-image-size-dialog.js")
+        self.assertContains(response, "admin-cv-editor.js")
 
     def test_admin_can_download_and_restore_database_and_media_backup(self):
         admin_user = get_user_model().objects.create_superuser(
@@ -218,9 +246,17 @@ class CVPageTests(TestCase):
         )
         self.client.force_login(admin_user)
 
-        change_response = self.client.get(
-            reverse("admin:cv_cvprofile_change", args=[self.cv_profile.pk])
-        )
+        with override_settings(
+            STORAGES={
+                "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+                "staticfiles": {
+                    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                },
+            }
+        ):
+            change_response = self.client.get(
+                reverse("admin:cv_cvprofile_change", args=[self.cv_profile.pk])
+            )
         self.assertContains(change_response, "Descargar copia")
         self.assertContains(change_response, "Restaurar copia")
 

@@ -58,7 +58,7 @@ flowchart TD
 - **Views:** app views select records, apply publication/filter logic, prepare template context, and return HTML or file responses.
 - **Models:** Django models define content and metadata and are persisted through migrations.
 - **Templates:** shared and app-specific templates generate server-side HTML.
-- **Content formatting:** `blog.formatting.render_post_content` converts Markdown to HTML, preserves math expressions, and sanitizes the result. Blog and research use this shared renderer.
+- **Content formatting:** `blog.formatting.render_post_content` converts Markdown to HTML, preserves math expressions, supports constrained image-width attributes, and sanitizes the result. Blog, research, and project articles use this shared renderer.
 - **Storage:** database fields hold metadata and text; research PDF binaries use Django’s configured media storage.
 
 ### 4.2 Technology stack
@@ -144,7 +144,7 @@ sequenceDiagram
 
 The `cv` application provides a singleton `CVProfile` for the editable professional summary, plus independently editable professional and teaching `Experience`, `Education`, `Skill`, `Certification`, and `ResearchProduct` records. Experiences include an employment dedication type (full-time, part-time, hourly teaching, services contract, freelance, internship, or other). Each record has an explicit display order; dated entries are ordered newest first, with current roles or studies first. Skills are grouped into technical, language, and other categories. Research products include type, authors, venue, year, identifier, URL, and description. There are no foreign-key relationships to the site profile because the site has one owner and profile context is shared at render time.
 
-Long-text CV fields use the EasyMDE Markdown editor in Django admin. Lists, emphasis, and links are sanitized and rendered on the public CV and in the generated PDF.
+Long-text CV fields use the EasyMDE Markdown editor in Django admin. Lists, emphasis, links, and safe images are sanitized and rendered on the public CV; the generated PDF keeps image alt text rather than fetching external images.
 
 The singleton CV profile admin provides superuser-only ZIP backup and restore actions. Archives contain Django fixture data and local media files; restore validates the archive, confirms a superuser record is present, then replaces database rows in a transaction before restoring media. Archive size is limited to 100 MiB.
 

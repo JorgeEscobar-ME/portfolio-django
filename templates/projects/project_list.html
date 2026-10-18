@@ -1,15 +1,124 @@
 {% extends "base.html" %}
 {% block title %}Proyectos | Portafolio{% endblock %}
 {% block content %}
-<h1>Proyectos</h1>
-{% for project in projects %}
-    <article>
-        <h2><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></h2>
-        <p>{{ project.summary }}</p>
-        {% if project.authors %}<p><strong>Autores:</strong> {{ project.authors }}</p>{% endif %}
-        {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
-    </article>
-{% empty %}
-    <p>Aún no hay proyectos.</p>
-{% endfor %}
+<style>
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+        gap: 1.25rem;
+        margin-top: 1.5rem;
+    }
+
+    .project-card {
+        overflow: hidden;
+        border: 1px solid rgba(124, 90, 56, 0.17);
+        border-radius: 18px;
+        background: rgba(255, 250, 244, 0.94);
+        box-shadow: 0 12px 32px rgba(53, 35, 18, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .project-card:hover,
+    .project-card:focus-within {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 38px rgba(53, 35, 18, 0.13);
+    }
+
+    .project-card__image,
+    .project-card__placeholder {
+        display: block;
+        width: 100%;
+        height: 205px;
+    }
+
+    .project-card__image {
+        object-fit: cover;
+    }
+
+    .project-card__placeholder {
+        display: grid;
+        place-items: center;
+        background:
+            radial-gradient(ellipse at 25% 20%, rgba(255, 255, 255, 0.72), transparent 36%),
+            radial-gradient(ellipse at 75% 85%, rgba(173, 104, 53, 0.24), transparent 42%),
+            linear-gradient(135deg, #f6d8b8, #f7eee3 55%, #e6c7a4);
+        color: #70431f;
+        font-size: 3rem;
+        font-weight: 700;
+        letter-spacing: -0.08em;
+    }
+
+    .project-card__body {
+        padding: 1.25rem;
+    }
+
+    .project-card__title {
+        display: inline-block;
+        margin: 0 0 0.5rem;
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+
+    .project-card__summary {
+        margin: 0.5rem 0 1rem;
+        color: var(--muted);
+    }
+
+    .project-card__meta {
+        margin: 0.5rem 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    .project-card__action {
+        display: inline-block;
+        margin-top: 0.75rem;
+        padding: 0.6rem 0.9rem;
+        border: 1px solid rgba(130, 71, 25, 0.3);
+        border-radius: 999px;
+        background: rgba(237, 186, 132, 0.22);
+        font-weight: 650;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .project-card {
+            transition: none;
+        }
+    }
+</style>
+<section aria-labelledby="projects-heading">
+    <h1 id="projects-heading">Proyectos</h1>
+    <div class="project-grid">
+        {% for project in projects %}
+            <article class="project-card">
+                <a href="{{ project.get_absolute_url }}" aria-label="Ver proyecto: {{ project.title }}">
+                    {% if project.cover_image %}
+                        <img
+                            class="project-card__image"
+                            src="{{ project.get_cover_image_url }}"
+                            alt="Portada del proyecto {{ project.title }}"
+                            loading="lazy">
+                    {% else %}
+                        <span class="project-card__placeholder" aria-hidden="true">P</span>
+                    {% endif %}
+                </a>
+                <div class="project-card__body">
+                    <h2 class="project-card__title">
+                        <a href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+                    </h2>
+                    <p class="project-card__summary">{{ project.summary }}</p>
+                    {% if project.authors %}
+                        <p class="project-card__meta"><strong>Autores:</strong> {{ project.authors }}</p>
+                    {% endif %}
+                    {% if project.technologies %}
+                        <p class="project-card__meta"><strong>Tecnologías:</strong> {{ project.technologies }}</p>
+                    {% endif %}
+                    <a class="project-card__action" href="{{ project.get_absolute_url }}">Ver proyecto</a>
+                </div>
+            </article>
+        {% empty %}
+            <p>Aún no hay proyectos.</p>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

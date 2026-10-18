@@ -21,6 +21,7 @@ _ALLOWED_TAGS = {
     "h5",
     "h6",
     "hr",
+    "img",
     "li",
     "ol",
     "p",
@@ -28,7 +29,7 @@ _ALLOWED_TAGS = {
     "ul",
 }
 _BLOCK_TAGS = {"blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "p"}
-_VOID_TAGS = {"br", "hr"}
+_VOID_TAGS = {"br", "hr", "img"}
 _REPORTLAB_TAGS = {
     "strong": "b",
     "em": "i",
@@ -39,15 +40,24 @@ _REPORTLAB_TAGS = {
 def render_cv_markdown(source):
     rendered = markdown.markdown(
         source,
-        extensions=["nl2br", "sane_lists"],
+        extensions=["attr_list", "nl2br", "sane_lists"],
     )
     return bleach.clean(
         rendered,
         tags=_ALLOWED_TAGS,
-        attributes={"a": ["href", "title"]},
+        attributes={
+            "a": ["href", "title"],
+            "img": _allowed_cv_image_attribute,
+        },
         protocols=["http", "https", "mailto"],
         strip=True,
     )
+
+
+def _allowed_cv_image_attribute(tag, name, value):
+    if name in {"src", "alt", "title"}:
+        return True
+    return name == "width" and value.isdecimal() and 100 <= int(value) <= 900
 
 
 def markdown_to_reportlab_flowables(source, styles):
@@ -93,6 +103,8 @@ def _inline_markup(node):
         return escape(node)
     if node.tag == "br":
         return "<br/>"
+    if node.tag == "img":
+        return escape(node.attributes.get("alt", ""))
     content = "".join(_inline_markup(child) for child in node.children)
     tag = _REPORTLAB_TAGS.get(node.tag, node.tag)
     if tag == "code":
