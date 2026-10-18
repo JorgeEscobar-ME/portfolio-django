@@ -6,6 +6,7 @@
     <article>
         <h2><a href="{{ project.get_absolute_url }}">{{ project.title }}</a></h2>
         <p>{{ project.summary }}</p>
+        {% if project.authors %}<p><strong>Autores:</strong> {{ project.authors }}</p>{% endif %}
         {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
     </article>
 {% empty %}

@@ -1,12 +1,87 @@
 {% extends "base.html" %}
 {% block title %}{{ project.title }} | Proyectos{% endblock %}
 {% block content %}
+<style>
+    .project-video {
+        aspect-ratio: 16 / 9;
+        max-width: 900px;
+    }
+
+    .project-video iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+</style>
+{% if rendered_article_content %}
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [["\\(", "\\)"], ["$", "$"]],
+            displayMath: [["\\[", "\\]"], ["$$", "$$"]],
+            processEscapes: true
+        },
+        options: {
+            skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+        }
+    };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{% endif %}
 <article>
     <h1>{{ project.title }}</h1>
     <p>{{ project.summary }}</p>
+    {% if project.authors %}<p><strong>Autores:</strong> {{ project.authors }}</p>{% endif %}
     {% if project.technologies %}<p>{{ project.technologies }}</p>{% endif %}
     <div>{{ project.description|linebreaks }}</div>
-    {% if project.repository_url %}<p><a href="{{ project.repository_url }}">Código fuente</a></p>{% endif %}
-    {% if project.demo_url %}<p><a href="{{ project.demo_url }}">Ver implementación</a></p>{% endif %}
+    {% if rendered_article_content %}
+        <section aria-labelledby="project-article-heading">
+            <h2 id="project-article-heading">Artículo</h2>
+            <div class="post-content">{{ rendered_article_content|safe }}</div>
+        </section>
+    {% endif %}
+    {% if project.video_url %}
+        <section aria-labelledby="project-video-heading">
+            <h2 id="project-video-heading">Video</h2>
+            {% if project.youtube_embed_url %}
+                <div class="project-video">
+                    <iframe
+                        src="{{ project.youtube_embed_url }}"
+                        title="Video: {{ project.title }}"
+                        loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        sandbox="allow-scripts allow-same-origin allow-presentation"
+                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            {% endif %}
+            <p><a href="{{ project.video_url }}" target="_blank" rel="noopener noreferrer">Abrir video</a></p>
+            {% if project.video_summary %}
+                <h3>Resumen</h3>
+                <div>{{ project.video_summary|linebreaks }}</div>
+            {% endif %}
+            {% if project.main_results %}
+                <h3>Resultados principales</h3>
+                <div>{{ project.main_results|linebreaks }}</div>
+            {% endif %}
+            {% if project.conclusions %}
+                <h3>Conclusiones</h3>
+                <div>{{ project.conclusions|linebreaks }}</div>
+            {% endif %}
+        </section>
+    {% endif %}
+    {% if project.python_code %}
+        <section aria-labelledby="project-code-heading">
+            <h2 id="project-code-heading">Código Python</h2>
+            <pre><code>{{ project.python_code }}</code></pre>
+            <p>El código se muestra como texto y no se ejecuta en este sitio.</p>
+            {% if project.notebook_url %}
+                <p><a href="{{ project.notebook_url }}" target="_blank" rel="noopener noreferrer">Abrir cuaderno en Google Colab</a></p>
+            {% endif %}
+        </section>
+    {% endif %}
+    {% if project.repository_url %}<p><a href="{{ project.repository_url }}" target="_blank" rel="noopener noreferrer">Código fuente</a></p>{% endif %}
+    {% if project.demo_url %}<p><a href="{{ project.demo_url }}" target="_blank" rel="noopener noreferrer">Ver implementación</a></p>{% endif %}
 </article>
 {% endblock %}
